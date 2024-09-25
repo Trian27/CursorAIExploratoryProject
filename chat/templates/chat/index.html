@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'chat/style.css' %}">
+    <style>
+        /* Inline CSS to center the title and set background color */
+        body {
+            background-color: beige;
+        }
+        h1 {
+            text-align: center;
+        }
+        #chat-container {
+            background-color: white; /* Ensure chat box has a different background */
+            padding: 20px;
+            margin: 0 auto;
+            width: 50%;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat With Your Personal Assistant</h1>
+    <div id="chat-container">
+        <div id="chat-box"></div>
+        <input type="text" id="user-input" placeholder="Type your message here...">
+        <button id="send-button">Send</button>
+    </div>
+    <script src="{% static 'chat/app.js' %}"></script>
+</body>
+</html>
