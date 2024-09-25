@@ -19,11 +19,12 @@ class ChatAPIView(APIView):
     '''
     Queries OpenAI API for chat completion
     @param self - The ChatAPIView object
-    @param request - The HTTP request
+    @param request - The HTTP request containing the user input question and previous message history.
     @returns StreamingHttpResonse with the content of each chunk, in streaming format
     '''
     def post(self, request):
         user_input = request.data.get("input")
+        chat_history = request.data.get("messages", [])
         if not user_input:
             return Response({"error": "No input provided"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -33,7 +34,7 @@ class ChatAPIView(APIView):
                 #Cursor had openai.ChatCompletion.create(...) which is deprecated syntax. It did not have the updated syntax.
                 response = openai.chat.completions.create(
                     model="gpt-4o",
-                    messages=[{"role": "user", "content": user_input}],
+                    messages=chat_history + [{"role": "user", "content": user_input}],
                     stream=True
                 )
                 for chunk in response:

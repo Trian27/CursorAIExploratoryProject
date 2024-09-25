@@ -39,30 +39,35 @@ document.addEventListener("DOMContentLoaded", function () {
     var chatBox = document.getElementById("chat-box");
     var userInput = document.getElementById("user-input");
     var sendButton = document.getElementById("send-button");
+    // Array to store the chat history
+    var chatHistory = [];
     /**
-     * @remarks
-     * This calls my view after the send button is clicked and then appends the chunks returned from the view to display onto the webpage
+     * @remark calls the view once the click button is sent or enter is pressed
+     *         and then displays streamed response back to the user
      */
-    sendButton.addEventListener("click", function () { return __awaiter(_this, void 0, void 0, function () {
-        var input, response, reader, decoder, aiResponse, _a, done, value, chunk, error_1;
+    var sendMessage = function () { return __awaiter(_this, void 0, void 0, function () {
+        var input, messages, response, reader, decoder, aiResponse, aiResponseElement, _a, done, value, chunk, formattedChunk, error_1;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     input = userInput.value;
                     if (!input)
                         return [2 /*return*/];
+                    // Add user's input to chat history
+                    chatHistory.push({ role: "user", content: input });
                     // Display the user's input in the chat box
                     chatBox.innerHTML += "<p><strong>You:</strong> ".concat(input, "</p>");
                     userInput.value = ""; // Clear the input field
                     _b.label = 1;
                 case 1:
                     _b.trys.push([1, 6, , 7]);
+                    messages = chatHistory.slice(-2048 / 2);
                     return [4 /*yield*/, fetch("/api/chat/", {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
                             },
-                            body: JSON.stringify({ input: input }),
+                            body: JSON.stringify({ input: input, messages: messages }),
                         })];
                 case 2:
                     response = _b.sent();
@@ -72,6 +77,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     reader = response.body.getReader();
                     decoder = new TextDecoder("utf-8");
                     aiResponse = "";
+                    aiResponseElement = document.createElement("p");
+                    aiResponseElement.innerHTML = "<strong>AI:</strong> ";
+                    chatBox.appendChild(aiResponseElement);
                     _b.label = 3;
                 case 3:
                     if (!true) return [3 /*break*/, 5];
@@ -82,10 +90,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         return [3 /*break*/, 5];
                     chunk = decoder.decode(value, { stream: true });
                     aiResponse += chunk;
+                    formattedChunk = chunk.replace(/\n/g, "<br>");
+                    aiResponseElement.innerHTML += formattedChunk;
                     return [3 /*break*/, 3];
                 case 5:
-                    // Display the AI's response as a single paragraph
-                    chatBox.innerHTML += "<p><strong>AI:</strong> ".concat(aiResponse, "</p>");
+                    // Add AI's response to chat history
+                    chatHistory.push({ role: "assistant", content: aiResponse });
                     return [3 /*break*/, 7];
                 case 6:
                     error_1 = _b.sent();
@@ -95,5 +105,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 case 7: return [2 /*return*/];
             }
         });
-    }); });
+    }); };
+    sendButton.addEventListener("click", sendMessage);
+    userInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+    });
 });

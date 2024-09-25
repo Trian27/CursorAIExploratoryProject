@@ -3,25 +3,34 @@ document.addEventListener("DOMContentLoaded", () => {
     const userInput = document.getElementById("user-input") as HTMLInputElement;
     const sendButton = document.getElementById("send-button") as HTMLButtonElement;
 
+    // Array to store the chat history
+    const chatHistory: { role: string; content: string }[] = [];
+
     /**
-     * @remarks
-     * This calls my view after the send button is clicked and then appends the chunks returned from the view to display onto the webpage
+     * @remark calls the view once the click button is sent or enter is pressed
+     *         and then displays streamed response back to the user 
      */
-    sendButton.addEventListener("click", async () => {
+    const sendMessage = async () => {
         const input = userInput.value;
         if (!input) return;
+
+        // Add user's input to chat history
+        chatHistory.push({ role: "user", content: input });
 
         // Display the user's input in the chat box
         chatBox.innerHTML += `<p><strong>You:</strong> ${input}</p>`;
         userInput.value = ""; // Clear the input field
 
         try {
+            // Prepare the messages array with the recent chat history
+            const messages = chatHistory.slice(-2048 / 2); // Assuming max tokens is 2048
+
             const response = await fetch("/api/chat/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ input }),
+                body: JSON.stringify({ input, messages }),
             });
 
             if (!response.body) {
@@ -32,18 +41,35 @@ document.addEventListener("DOMContentLoaded", () => {
             const decoder = new TextDecoder("utf-8");
             let aiResponse = "";
 
+            // Create a paragraph element for the AI response
+            const aiResponseElement = document.createElement("p");
+            aiResponseElement.innerHTML = "<strong>AI:</strong> ";
+            chatBox.appendChild(aiResponseElement);
+
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
                 const chunk = decoder.decode(value, { stream: true });
                 aiResponse += chunk;
+
+                // Replace newline characters with <br> tags for proper display
+                const formattedChunk = chunk.replace(/\n/g, "<br>");
+                aiResponseElement.innerHTML += formattedChunk;
             }
 
-            // Display the AI's response as a single paragraph
-            chatBox.innerHTML += `<p><strong>AI:</strong> ${aiResponse}</p>`;
+            // Add AI's response to chat history
+            chatHistory.push({ role: "assistant", content: aiResponse });
         } catch (error) {
             console.error("Error:", error);
             chatBox.innerHTML += `<p><strong>Error:</strong> ${error.message}</p>`;
+        }
+    };
+
+    sendButton.addEventListener("click", sendMessage);
+
+    userInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            sendMessage();
         }
     });
 });
