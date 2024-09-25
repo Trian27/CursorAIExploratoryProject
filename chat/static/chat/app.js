@@ -39,18 +39,31 @@ document.addEventListener("DOMContentLoaded", function () {
     var chatBox = document.getElementById("chat-box");
     var userInput = document.getElementById("user-input");
     var sendButton = document.getElementById("send-button");
+    var temperatureSlider = document.getElementById("temperature-slider");
+    var temperatureValue = document.getElementById("temperature-value");
+    var speakButton = document.getElementById("speak-button");
     // Array to store the chat history
     var chatHistory = [];
+    // Update temperature value display
+    temperatureSlider.addEventListener("input", function () {
+        temperatureValue.textContent = temperatureSlider.value;
+    });
+    // Adjust the height of the textarea dynamically
+    userInput.addEventListener("input", function () {
+        userInput.style.height = "auto";
+        userInput.style.height = "".concat(userInput.scrollHeight, "px");
+    });
     /**
      * @remark calls the view once the click button is sent or enter is pressed
      *         and then displays streamed response back to the user
      */
     var sendMessage = function () { return __awaiter(_this, void 0, void 0, function () {
-        var input, messages, response, reader, decoder, aiResponse, aiResponseElement, _a, done, value, chunk, formattedChunk, error_1;
+        var input, temperature, messages, response, reader, decoder, aiResponse, aiResponseElement, _a, done, value, chunk, formattedChunk, error_1;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     input = userInput.value;
+                    temperature = parseFloat(temperatureSlider.value);
                     if (!input)
                         return [2 /*return*/];
                     // Add user's input to chat history
@@ -58,6 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     // Display the user's input in the chat box
                     chatBox.innerHTML += "<p><strong>You:</strong> ".concat(input, "</p>");
                     userInput.value = ""; // Clear the input field
+                    userInput.style.height = "auto"; // Reset the height
                     _b.label = 1;
                 case 1:
                     _b.trys.push([1, 6, , 7]);
@@ -67,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             headers: {
                                 "Content-Type": "application/json",
                             },
-                            body: JSON.stringify({ input: input, messages: messages }),
+                            body: JSON.stringify({ input: input, messages: messages, temperature: temperature }),
                         })];
                 case 2:
                     response = _b.sent();
@@ -106,9 +120,20 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }); };
+    var speakResponse = function () {
+        if (chatHistory.length === 0)
+            return;
+        var lastResponse = chatHistory.filter(function (message) { return message.role === "assistant"; }).pop();
+        if (!lastResponse)
+            return;
+        var utterance = new SpeechSynthesisUtterance(lastResponse.content);
+        window.speechSynthesis.speak(utterance);
+    };
     sendButton.addEventListener("click", sendMessage);
+    speakButton.addEventListener("click", speakResponse);
     userInput.addEventListener("keydown", function (event) {
-        if (event.key === "Enter") {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
             sendMessage();
         }
     });

@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat</title>
+    <title>Chat Interface</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'chat/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* Inline CSS to center the title and set background color */
         body {
@@ -22,14 +23,70 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+        #input-container {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        #user-input {
+            flex-grow: 1;
+            margin-right: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            resize: none; /* Prevent manual resizing */
+            overflow: hidden; /* Hide scrollbars */
+        }
+        #send-button {
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        .controls {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+            position: relative;
+        }
+        .controls label {
+            margin-right: 10px;
+        }
+        .controls .slider-container {
+            flex-grow: 1;
+        }
+        .controls .speak-button-container {
+            position: absolute;
+            left: calc(100% - 15px); /* Shift to the left by 15 pixels */
+            transform: translateX(-100%);
+            top: 0; /* Align with the top of the controls container */
+        }
+        .controls .speak-button-container button {
+            margin-top: 5px; /* Adjust this value as needed to position the button */
+        }
     </style>
 </head>
 <body>
     <h1>Chat With Your Personal Assistant</h1>
     <div id="chat-container">
         <div id="chat-box"></div>
-        <input type="text" id="user-input" placeholder="Type your message here...">
-        <button id="send-button">Send</button>
+        <div id="input-container">
+            <textarea id="user-input" placeholder="Type your message here..."></textarea>
+            <button id="send-button">Send</button>
+        </div>
+        <div class="controls">
+            <div class="slider-container">
+                <label for="temperature-slider">Temperature: <span id="temperature-value">0.0</span></label>
+                <input type="range" id="temperature-slider" min="0" max="1" step="0.1" value="0.0">
+            </div>
+            <div class="speak-button-container">
+                <button id="speak-button" title="Read Aloud">
+                    <i class="fas fa-bullhorn"></i>
+                </button>
+            </div>
+        </div>
     </div>
     <script src="{% static 'chat/app.js' %}"></script>
 </body>

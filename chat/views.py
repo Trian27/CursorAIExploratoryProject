@@ -25,9 +25,9 @@ class ChatAPIView(APIView):
     def post(self, request):
         user_input = request.data.get("input")
         chat_history = request.data.get("messages", [])
+        temperature = request.data.get("temperature", 0.0)
         if not user_input:
             return Response({"error": "No input provided"}, status=status.HTTP_400_BAD_REQUEST)
-
         openai.api_key = settings.OPENAI_API_KEY
         try:
             def generate():
@@ -35,6 +35,7 @@ class ChatAPIView(APIView):
                 response = openai.chat.completions.create(
                     model="gpt-4o",
                     messages=chat_history + [{"role": "user", "content": user_input}],
+                    temperature=temperature,
                     stream=True
                 )
                 for chunk in response:
